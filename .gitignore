@@ -1,0 +1,4 @@
+/etc/db.conf
+/etc/settings.json
+/vendor
+/composer.*

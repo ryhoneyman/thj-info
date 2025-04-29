@@ -1,0 +1,43 @@
+#!/usr/bin/php
+<?php
+include_once 'thj-info-init.php';
+include_once 'local/main.class.php';
+include_once 'autoload.php';
+
+$main = new Main([
+   'debugLevel'     => 9,
+   'debugType'      => DEBUG_CLI,
+   'errorReporting' => false,
+   'sessionStart'   => false,
+   'memoryLimit'    => null,
+   'sendHeaders'    => false,
+   'database'       => false,
+   'input'          => false,
+   'html'           => false,
+   'adminlte'       => false,
+   'cliLongOpts'    => null,
+]);
+
+$settings   = json_decode(file_get_contents(APP_CONFIGDIR.'/settings.json'),true);
+
+use Discord\DiscordCommandClient;
+use Discord\Parts\Interactions\Command\Command;
+
+// Create a $discord BOT
+$discord = new DiscordCommandClient([
+    'token' => $settings['THJ_INFO_DISCORD_BOT_TOKEN'], 
+]);
+
+$discord->on('init', function (DiscordCommandClient $discord) {
+    $commandItem = new Command($discord,[
+        'name' => 'thjaa', 
+        'description' => 'THJ AA Count', 
+    ]);
+    $discord->application->commands->save($commandItem);
+    
+    $commandSpell = new Command($discord,[
+        'name' => 'thjpower', 
+        'description' => 'THJ Power Slot Percent', 
+    ]);
+    $discord->application->commands->save($commandSpell);
+});
