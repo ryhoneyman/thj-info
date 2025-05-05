@@ -179,15 +179,15 @@ class MyAPI extends LWPLib\APIBase
             $clientId     = $generateResult['client_id'];
             $clientSecret = $generateResult['client_secret'];
 
-            $createInfoResult = $this->v1DataProviderBindExecute($this->defaultDatabase,'INSERT INTO  (api_key_id,discord_id,discord_username,created,updated) VALUES (?,?,?,now(),now())','iss',[$userApiKeyId,$discordUserId,$discordUsername]);
+            $createInfoResult = $this->v1DataProviderBindExecute($this->defaultDatabase,'INSERT INTO account (api_key_id,discord_id,discord_username,created,updated) VALUES (?,?,?,now(),now())','iss',[$userApiKeyId,$discordUserId,$discordUsername]);
 
             if (!$createInfoResult) {
-                $this->error("Error creating character: ".$this->clientError());
+                $this->error("Error creating account: ".$this->clientError());
                 return false;
             }
 
             if (!isset($createInfoResult['insertId'])) {
-                $this->error("Error fetching character id");
+                $this->error("Error fetching account id");
                 return false;
             }
 
