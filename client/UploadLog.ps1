@@ -223,6 +223,7 @@ if ($LogDir -and -not (Test-Path $LogDir -PathType Container)) {
     $logDir = $null
 }
 
+$ControlDir          = $(Join-Path -Path $PSScriptRoot -ChildPath 'control')
 $ConfigFilePath      = $(Join-Path -Path $PSScriptRoot -ChildPath $ConfigFile)
 $CredentialsFilePath = $(Join-Path -Path $PSScriptRoot -ChildPath 'credentials.json')
 
@@ -272,6 +273,8 @@ else {
         Fatal "Credentials file '$CredentialsFilePath' is not valid or does not exist."
     }
 }
+
+Add-Member -InputObject $config -MemberType NoteProperty -Name 'controlDir' -Value $CharacterName -Force
 
 if ($CharacterName) {
     # Look for a file matching the CharacterName
@@ -338,7 +341,7 @@ Get-Content -Path $config.playerLogFile -Wait -Tail 0 | ForEach-Object {
 
 			if (-not (Test-Path $lockFile)) {
 				Warning "Death/zoning detected, creating lock file"
-				New-Item -ItemType File -Path $lockFile | Out-Null
+				New-Item -ItemType File -Path $lockFile -Force | Out-Null
 			}
 		}
 		
