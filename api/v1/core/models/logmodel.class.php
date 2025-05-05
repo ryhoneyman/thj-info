@@ -90,6 +90,10 @@ class LogModel extends DefaultModel
          $types     = 'iss'.implode('',array_column($updateFields,'type'));
          $data      = array_merge([$accountInfo['id'],$characterName],array_column($updateFields,'value'));
 
+         $this->debug(0,"STATEMENT: $statement");
+         $this->debug(0,"TYPES:     $types");
+         $this->debug(0,"DATA:      ".json_encode($data));
+
          $result = $this->main->db()->bindExecute($statement,$types,$data);
 
          if ($result === false) {
