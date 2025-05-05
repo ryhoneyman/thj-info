@@ -32,6 +32,10 @@ class LogModel extends DefaultModel
 
       $accountInfo = $this->api->getAccount($apiKeyId);
 
+      $this->debug(0,"ACCOUNT INFO: ".json_encode($accountInfo));
+      $this->debug(0,"CHARACTER NAME: $characterName");
+      $this->debug(0,"LOG ENTRIES: ".json_encode($logEntries));
+
       $info = [];
 
       foreach ($logEntries as $logEntry) {
