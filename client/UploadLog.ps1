@@ -240,7 +240,8 @@ if ($config -eq $null -or $Init) {
     }
 
     $config = @{
-        apiBaseUrl = "http://thjinfo-dev.home.lan/api/v1"
+        #apiBaseUrl = "http://thjinfo-dev.home.lan/api/v1"
+        apiBaseUrl = "https://thj.bytelligence.com/api/v1"
         apiHeaders = @{
             "Content-Type" = "application/json"
             "Accept"       = "application/json"
