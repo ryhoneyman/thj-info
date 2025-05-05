@@ -100,11 +100,11 @@ class MyAPI extends LWPLib\APIBase
 
     public function getCharacterData($discordId)
     {
-        $statement = 'SELECT cd.level, cd.aa_points, cd.powerslot_item, cd.powerslot_percent FROM character_data cd LEFT JOIN account a ON a.id = cd.account_id WHERE a.discord_id = ?';
+        $statement = 'SELECT cd.name, cd.level, cd.aa_points, cd.powerslot_item, cd.powerslot_percent, unix_timestamp(cd.updated) as updated FROM character_data cd LEFT JOIN account a ON a.id = cd.account_id WHERE a.discord_id = ?';
         $types     = 's';
         $data      = [$discordId];
 
-        $result = $this->v1DataProviderBindQuery($this->defaultDatabase,$statement,$types,$data,['single' => true]);
+        $result = $this->v1DataProviderBindQuery($this->defaultDatabase,$statement,$types,$data);
 
         if (!$result) {
             $this->error($this->clientError());
