@@ -73,7 +73,7 @@ class LogModel extends DefaultModel
 
             $updateFields[$updateColumn] = ['type' => $columnInfo['type'], 'value' => $updateValue];
             
-            if (isset($updateAlert) && $updateValue <= $updateAlert) {
+            if (isset($updateAlert) && $updateValue >= $updateAlert) {
                $accountInfo = $this->api->getAccount($apiKeyId);
 
                if (isset($accountInfo['discord_id'])) {
