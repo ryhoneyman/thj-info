@@ -274,7 +274,7 @@ else {
     }
 }
 
-Add-Member -InputObject $config -MemberType NoteProperty -Name 'controlDir' -Value $CharacterName -Force
+Add-Member -InputObject $config -MemberType NoteProperty -Name 'controlDir' -Value $ControlDir -Force
 
 if ($CharacterName) {
     # Look for a file matching the CharacterName
@@ -337,10 +337,10 @@ Get-Content -Path $config.playerLogFile -Wait -Tail 0 | ForEach-Object {
 		$line = $_
 
 		if ($line -match "] LOADING, PLEASE WAIT...") {
-            $lockFile = "$($config.controlDir)\\lock.txt"
+            $lockFile = "$($config.controlDir)\lock.txt"
 
 			if (-not (Test-Path $lockFile)) {
-				Warning "Death/zoning detected, creating lock file"
+				Warning "Death/zoning detected, creating lock file $lockFile"
 				New-Item -ItemType File -Path $lockFile -Force | Out-Null
 			}
 		}
