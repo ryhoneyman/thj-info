@@ -1,0 +1,4 @@
+{
+    "rateLimit": true,
+    "defaultTokenLifetime": 3600
+}

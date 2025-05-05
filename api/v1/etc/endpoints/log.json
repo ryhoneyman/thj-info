@@ -1,0 +1,23 @@
+{
+   "/log/process": {
+      "POST": {
+         "name": "Parse Log Entries",
+         "description": "",
+         "controller": "LogController",
+         "function": "processLog",
+         "category": "Log",
+         "param": {
+            "log": { "required": true, "constraint": "array", "description": "Log lines" }
+         }
+      }
+   },
+   "/log/phrases": {
+      "GET": {
+         "name": "Get Log Matching Phrases",
+         "description": "",
+         "controller": "LogController",
+         "function": "getPhrases",
+         "category": "Log"
+      }
+   }
+}

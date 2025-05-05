@@ -11,33 +11,73 @@ $main = new Main([
    'sessionStart'   => false,
    'memoryLimit'    => null,
    'sendHeaders'    => false,
-   'database'       => false,
+   'database'       => true,
+   'dbConfigDir'    => APP_CONFIGDIR,
+   'fileDefine'     => APP_CONFIGDIR.'/defines.json',
+   'dbDefine'       => 'MY_%',
    'input'          => false,
    'html'           => false,
    'adminlte'       => false,
    'cliLongOpts'    => null,
 ]);
 
-$settings   = json_decode(file_get_contents(APP_CONFIGDIR.'/settings.json'),true);
-
 use Discord\DiscordCommandClient;
 use Discord\Parts\Interactions\Command\Command;
+use Discord\Repository\Interaction\GlobalCommandRepository;
+
+$directives = [
+    'delete'   => false,
+    'register' => false,
+];
 
 // Create a $discord BOT
 $discord = new DiscordCommandClient([
-    'token' => $settings['THJ_INFO_DISCORD_BOT_TOKEN'], 
+    'token' => MY_DISCORD_BOT_TOKEN,
 ]);
 
-$discord->on('init', function (DiscordCommandClient $discord) {
-    $commandItem = new Command($discord,[
-        'name' => 'thjaa', 
-        'description' => 'THJ AA Count', 
-    ]);
-    $discord->application->commands->save($commandItem);
-    
-    $commandSpell = new Command($discord,[
-        'name' => 'thjpower', 
-        'description' => 'THJ Power Slot Percent', 
-    ]);
-    $discord->application->commands->save($commandSpell);
+$discord->on('init', function (DiscordCommandClient $discord) use ($directives) {
+
+    if ($directives['delete']) {
+        //$discord->application->commands->delete("1367929868909809797");
+        //$discord->application->commands->delete("1367929870667091981");
+    }
+
+    /** @var GlobalCommandRepository $globalCommandsRepo */
+    $globalCommandsRepo = $discord->application->commands;
+
+    // Use freshen() to ensure we get the latest data from Discord
+    $globalCommandsRepo->freshen()->then(
+        function (GlobalCommandRepository $commands) {
+            if ($commands->count() === 0) {
+                echo "No global commands are registered.", PHP_EOL;
+                return;
+            }
+
+            echo "Registered Global Commands:", PHP_EOL;
+            /** @var Command $command */
+            foreach ($commands as $command) {
+                echo " - Name: {$command->name} (ID: {$command->id})", PHP_EOL;
+                // You can access other properties like $command->description, $command->options, etc.
+            }
+        }
+    )->otherwise(
+        function (\Throwable $error) {
+            echo "Error fetching global commands: {$error->getMessage()}", PHP_EOL;
+        }
+    );
+
+    if ($directives['register']) {
+        $commandRegister = new Command($discord,[
+            'name' => 'thjregister', 
+            'description' => 'THJ Register User', 
+        ]);
+        $discord->application->commands->save($commandRegister);
+
+        $commandInfo = new Command($discord,[
+            'name' => 'thjinfo', 
+            'description' => 'THJ Character Info', 
+        ]);
+        $discord->application->commands->save($commandInfo);
+    }
+
 });

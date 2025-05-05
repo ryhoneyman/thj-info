@@ -1,0 +1,16 @@
+{
+   "/oauth/token": {
+      "POST": {
+         "name": "OAuth Authentication",
+         "description": "",
+         "controller": "AuthController",
+         "function": "authOAuth",
+         "category": "Authentication",
+         "filter": {},
+         "param": {},
+         "body" : {
+            "grant_type": { "required": true, "constraint": "string", "description": "The OAuth grant type" }
+         }
+      }
+   }
+}

@@ -1,0 +1,69 @@
+{
+   "/data/provider/table/{database}/{table}": {
+      "GET": {
+         "name": "Get Data From Database",
+         "description": "",
+         "controller": "DataController",
+         "function": "getStructuredTableData",
+         "category": "Data",
+         "filter": {
+            "database": { "required": true, "constraint": "string", "description": "Name of database" },
+            "table":    { "required": true, "constraint": "string", "description": "Database table name" }
+         }
+      },
+      "POST": {
+         "name": "Get Data From Database",
+         "description": "",
+         "controller": "DataController",
+         "function": "getStructuredTableData",
+         "category": "Data",
+         "filter": {
+            "database": { "required": true, "constraint": "string", "description": "Name of database" },
+            "table":    { "required": true, "constraint": "string", "description": "Database table name" }
+         },
+         "param": {            
+            "index":      { "required": false, "constraint": "string", "description": "Index column for data return", "default": null },
+            "sort":       { "required": false, "constraint": "json", "description": "Sort attributes for query", "default": null },
+            "pagination": { "required": false, "constraint": "json", "description": "Pagination attributes for query", "default": null },
+            "filter":     { "required": false, "constraint": "json", "description": "Filter attributes for query", "default": null },
+            "column":     { "required": false, "constraint": "json", "description": "Array of columns to return", "default": null }
+         }
+      }
+   },
+   "/data/provider/query/{database}": {
+      "POST": {
+         "name": "Query Data From Database",
+         "description": "",
+         "controller": "DataController",
+         "function": "bindQueryDatabase",
+         "category": "Data",
+         "filter": {
+            "database": { "required": true, "constraint": "string", "description": "Name of database." }
+         },
+         "param": {
+            "statement": { "required": true, "constraint": "string", "description": "Database query" },
+            "types":     { "required": false, "constraint": "string", "description": "Types of query values", "default": null },
+            "data":      { "required": false, "constraint": "array", "description": "Array of query values", "default": null },
+            "index":     { "required": false, "constraint": "string", "description": "Index column for data return", "default": null },
+            "single":    { "required": false, "constraint": "boolean", "description": "Return only a single result value", "default": null }
+         }
+      }
+   },
+   "/data/provider/execute/{database}": {
+      "POST": {
+         "name": "Execute Query In Database",
+         "description": "",
+         "controller": "DataController",
+         "function": "bindExecuteDatabase",
+         "category": "Data",
+         "filter": {
+            "database": { "required": true, "constraint": "string", "description": "Name of database." }
+         },
+         "param": {
+            "statement": { "required": true, "constraint": "string", "description": "Statement to execute", "default": null },
+            "types":     { "required": true, "constraint": "string", "description": "Data types", "default": null },
+            "data":      { "required": true, "constraint": "array", "description": "Array of array data", "default": null }
+         }
+      }
+   }
+}

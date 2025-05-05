@@ -1,0 +1,37 @@
+#!/usr/bin/php
+<?php
+include_once 'thj-info-init.php';
+include_once 'local/main.class.php';
+include_once 'autoload.php';
+
+$main = new Main([
+   'debugLevel'     => 9,
+   'debugType'      => DEBUG_CLI,
+   'errorReporting' => false,
+   'sessionStart'   => false,
+   'memoryLimit'    => null,
+   'sendHeaders'    => false,
+   'database'       => false,
+   'dbConfigDir'    => APP_CONFIGDIR,
+   'fileDefine'     => APP_CONFIGDIR.'/defines.json',
+   'dbDefine'       => null,
+   'input'          => false,
+   'html'           => false,
+   'adminlte'       => false,
+   'cliLongOpts'    => null,
+]);
+
+
+$apiOptions = ['baseUrl' => MY_API_URL, 'authToken' => MY_API_AUTH_TOKEN];
+
+var_dump($apiOptions);
+
+if (!$main->buildClass('api','MyAPI',$apiOptions,'local/myapi.class.php')) { $this->notReady("API not available"); exit; }
+
+$api = $main->obj('api');
+
+$result = $api->generateApiKey('1234567@discord',['discord-log']);
+
+var_dump($result,$api->error());
+
+?>

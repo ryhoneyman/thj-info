@@ -5,21 +5,23 @@ include_once 'local/main.class.php';
 include_once 'autoload.php';
 
 $main = new Main([
-   'debugLevel'     => 9,
+   'debugLevel'     => 6,
    'debugType'      => DEBUG_CLI,
    'errorReporting' => false,
    'sessionStart'   => false,
    'memoryLimit'    => null,
    'sendHeaders'    => false,
-   'database'       => false,
+   'database'       => true,
+   'dbConfigDir'    => APP_CONFIGDIR,
+   'fileDefine'     => APP_CONFIGDIR.'/defines.json',
+   'dbDefine'       => 'MY_%',
    'input'          => false,
    'html'           => false,
    'adminlte'       => false,
    'cliLongOpts'    => null,
 ]);
 
-$settings   = json_decode(file_get_contents(APP_CONFIGDIR.'/settings.json'),true);
-$apiOptions = ['baseUrl' => $settings['THJ_INFO_API_URL'], 'authToken' => $settings['THJ_INFO_API_AUTH_TOKEN']];
+$apiOptions = ['baseUrl' => MY_API_URL, 'authToken' => MY_API_AUTH_TOKEN];
 
 if (!$main->buildClass('api','MyAPI',$apiOptions,'local/myapi.class.php')) { exit; }
 
@@ -28,20 +30,57 @@ use Discord\Parts\Interactions\Interaction;
 use Discord\Builders\MessageBuilder;
 use Discord\Builders\Components\StringSelect;
 use Discord\Builders\Components\Option;
+use Discord\Parts\User\User;
+use Discord\Parts\Channel\Message; 
+
+
 
 // Create a $discord BOT
 $discord = new DiscordCommandClient([
-    'token' => $settings['THJ_INFO_DISCORD_BOT_TOKEN'], 
+    'token' => MY_DISCORD_BOT_TOKEN, 
 ]);
 
-$discord->listenCommand('thjaa', function (Interaction $interaction) use ($main) {
+$discord->listenCommand('thjregister', function (Interaction $interaction) use ($main) {
     // Ignore messages from any Bots
     if ($interaction->user->bot) return;
 
     /** @var $api MyAPI */
     $api = $main->obj('api');
 
-    $response = '';
+    $result = $api->registerAccount($interaction->user->id, $interaction->user->username);
+
+    $builder = MessageBuilder::new()->setFlags(64); // 64 is the flag for ephemeral messages
+
+    if ($result === false) {
+        $response = 'Error: '.$api->error();
+    }
+    else {
+        $builder->addFileFromContent('credentials.json', json_encode($result, JSON_PRETTY_PRINT));
+        $response = "Registration successful!  Please download the file below into your script directory:";        
+    }
+
+    $builder->setContent($response);
+
+    // Respond to the interaction
+    $interaction->respondWithMessage($builder);
+});
+
+
+$discord->listenCommand('thjinfo', function (Interaction $interaction) use ($main) {
+    // Ignore messages from any Bots
+    if ($interaction->user->bot) return;
+
+    /** @var $api MyAPI */
+    $api = $main->obj('api');
+
+    $characterData = $api->getCharacterData($interaction->user->id);
+
+    $response = sprintf("```\nLevel: %s\nAA Points: %s\nPowerslot Item: %s (%0.2f%%)\n```",
+                        $characterData['level'] ?: 'Unknown',
+                        $characterData['aa_points'] ?? 0,
+                        $characterData['powerslot_item'] ?? 'None',
+                        $characterData['powerslot_percent'] ?? 0  
+    );
 
     // Respond to the interaction
     $interaction->respondWithMessage(
@@ -51,22 +90,52 @@ $discord->listenCommand('thjaa', function (Interaction $interaction) use ($main)
     );
 });
 
-
-$discord->listenCommand('thjpower', function (Interaction $interaction) use ($main) {
-    // Ignore messages from any Bots
-    if ($interaction->user->bot) return;
+$discord->on('init', function (DiscordCommandClient $discord) use ($main) {
+    echo "Bot is ready!" . PHP_EOL;
+    echo "Logged in as: {$discord->user->username}#{$discord->user->discriminator}" . PHP_EOL;
 
     /** @var $api MyAPI */
     $api = $main->obj('api');
 
-    $response = '';
+    // --- Timer Setup ---
+    // Get the ReactPHP event loop instance
+    $loop = $discord->getLoop();
 
-    // Respond to the interaction
-    $interaction->respondWithMessage(
-        MessageBuilder::new()
-            ->setContent($response)
-            ->setComponents([])
-    );
+    // Add a timer that executes the callback every 2.0 seconds
+    $timer = $loop->addPeriodicTimer(2.0, function () use ($discord, $api) {
+        $messageQueue = $api->getMessageQueue(); 
+
+        if ($messageQueue) {
+            $sentIds  = [];
+            $promises = [];
+            foreach ($messageQueue as $messageInfo) {
+                $messageId      = $messageInfo['id'];
+                $targetUserId   = $messageInfo['discord_id'];
+                $messageContent = $messageInfo['message'];
+
+                $promises[] = $discord->users->fetch($targetUserId)
+                    ->then(function (User $user) use ($messageContent) {
+                        return $user->sendMessage($messageContent);
+                    })
+                    ->then(function (Message $sentDm) use (&$sentIds,$messageId) {
+                        echo "DM successfully sent to {$sentDm->channel->recipient->username}\n";
+                        $sentIds[] = $messageId;
+
+                    })
+                    ->otherwise(function (\Exception $error) use ($targetUserId) {
+                        echo "Failed to fetch user or send DM (ID: {$targetUserId}): {$error->getMessage()}\n";
+                        // Common reasons: Invalid ID, User not found, Bot doesn't share server, DMs disabled/blocked.
+                    });
+            }
+
+            // Wait for all promises to resolve
+            \React\Promise\all($promises)->then(function () use ($api, &$sentIds) {
+                if (!empty($sentIds)) {
+                    $api->removeMessagesFromMessageQueue($sentIds); 
+                }
+            });
+        }   
+    });
 });
 
 // Start the Bot (must be at the bottom)
