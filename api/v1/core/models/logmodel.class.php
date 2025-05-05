@@ -22,13 +22,15 @@ class LogModel extends DefaultModel
       ];
    }
 
-   public function processLog($logEntries)
+   public function processLog($characterName, $logEntries)
    {
       if ($this->main->connectDatabase() === false) { $this->error('database not available'); return false; }
 
       if (!$apiKeyId = $this->main->obj('token')->keyId) { $this->error('invalid api key'); return false; };
 
       if (!is_array($logEntries)) { $logEntries = [$logEntries]; }
+
+      $accountInfo = $this->api->getAccount($apiKeyId);
 
       $info = [];
 
@@ -74,8 +76,6 @@ class LogModel extends DefaultModel
             $updateFields[$updateColumn] = ['type' => $columnInfo['type'], 'value' => $updateValue];
             
             if (isset($updateAlert) && $updateValue >= $updateAlert) {
-               $accountInfo = $this->api->getAccount($apiKeyId);
-
                if (isset($accountInfo['discord_id'])) {
                   $this->api->sendMessage($accountInfo['discord_id'],sprintf($alertMessage,$updateValue));
                }
@@ -84,10 +84,11 @@ class LogModel extends DefaultModel
       }
 
       if ($updateFields) {
-         $setFields = implode(', ',array_map(function($fieldName) { return "$fieldName = ?"; },array_keys($updateFields)));
-         $statement = "UPDATE character_data cd JOIN account a ON cd.account_id = a.id SET $setFields, cd.updated = now() WHERE a.api_key_id = ?";
-         $types     = implode('',array_column($updateFields,'type')).'i';
-         $data      = array_merge(array_column($updateFields,'value'),[$apiKeyId]);
+         $statement = "INSERT INTO character_data (account_id,name,updated,".implode(',',array_keys($updateFields)).") ". 
+                      "VALUES (?,?,now(),".implode(',',array_fill(0,count($updateFields),'?')).") ".
+                      "ON DUPLICATE KEY UPDATE updated=values(updated), ".implode(',',array_map(function($field) { return "$field=values($field)"; },array_keys($updateFields)));
+         $types     = 'iss'.implode('',array_column($updateFields,'type'));
+         $data      = array_merge([$accountInfo['id'],$characterName],array_column($updateFields,'value'));
 
          $result = $this->main->db()->bindExecute($statement,$types,$data);
 

@@ -171,7 +171,7 @@ class MyAPI extends LWPLib\APIBase
         $clientId     = $userData['client_id'];
 
         if (!$userApiKeyId) {
-            $generateResult = $this->generateApiKey("$discordUserId@discord",['discord-log'],10,1);
+            $generateResult = $this->generateApiKey("$discordUserId@discord",['discord-log'],5,3);
 
             if (!$generateResult) { return false; }  // error set in generateApiKey
 
@@ -183,18 +183,6 @@ class MyAPI extends LWPLib\APIBase
 
             if (!$createInfoResult) {
                 $this->error("Error creating account: ".$this->clientError());
-                return false;
-            }
-
-            if (!isset($createInfoResult['insertId'])) {
-                $this->error("Error fetching account id");
-                return false;
-            }
-
-            $createDataResult = $this->v1DataProviderBindExecute($this->defaultDatabase,'INSERT INTO character_data (account_id) VALUES (?)','i',[$createInfoResult['insertId']]);
-
-            if (!$createDataResult) {
-                $this->error("Error creating character: ".$this->clientError());
                 return false;
             }
         }

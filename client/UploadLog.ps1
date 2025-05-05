@@ -159,8 +159,8 @@ function Upload-LogToAPI {
     )
     
     $payload = @{
-        characterName = $CharacterName
-        log = @($line)
+        characterName = $config.characterName
+        log           = @($line)
     } | ConvertTo-Json -Depth 2 -Compress
 
     try {
@@ -278,7 +278,8 @@ if ($CharacterName) {
     $characterFile = Get-ChildItem -Path $config.logDir -File | Where-Object { $_.Name -match "_$($CharacterName)_" } | Select-Object -First 1
 
     if ($characterFile) {
-		Add-Member -InputObject $config -MemberType NoteProperty -Name 'playerLogFile' -Value $characterFile.FullName -Force        
+		Add-Member -InputObject $config -MemberType NoteProperty -Name 'playerLogFile' -Value $characterFile.FullName -Force     
+        Add-Member -InputObject $config -MemberType NoteProperty -Name 'characterName' -Value $CharacterName -Force   
     } 
 }
 else {
@@ -290,6 +291,7 @@ else {
 
         if ($latestFile.Name -match "^eqlog_(.+?)_thj\.txt$") {
             $CharacterName = $matches[1]
+            Add-Member -InputObject $config -MemberType NoteProperty -Name 'characterName' -Value $CharacterName -Force   
         } 
     } 
     else {
@@ -323,7 +325,7 @@ if (Download-MatchPhrases) {
 $matchPhrases = $($config.matchPhrases -join '|')
 
 
-Notice "Monitoring log file for character '$CharacterName': $($config.playerLogFile)"
+Notice "Monitoring log file for character '$($config.characterName)': $($config.playerLogFile)"
 
 # Tail the file and process new lines
 Get-Content -Path $config.playerLogFile -Wait -Tail 0 | ForEach-Object {
