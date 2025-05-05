@@ -83,6 +83,8 @@ class LogModel extends DefaultModel
          }
       }
 
+      $this->debug(0,"UPDATE FIELDS: ".json_encode($updateFields));
+
       if ($updateFields) {
          $statement = "INSERT INTO character_data (account_id,name,updated,".implode(',',array_keys($updateFields)).") ". 
                       "VALUES (?,?,now(),".implode(',',array_fill(0,count($updateFields),'?')).") ".
