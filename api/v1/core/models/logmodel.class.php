@@ -58,9 +58,9 @@ class LogModel extends DefaultModel
       }
 
       $characterColumns = [
-         'aa_points'         => ['type' => 'i', 'name' => 'cd.aa_points', 'alert' => 100, 'alertMessage' => 'You have reached %s ability points'],
-         'powerslot_item'    => ['type' => 's', 'name' => 'cd.powerslot_item'],
-         'powerslot_percent' => ['type' => 'd', 'name' => 'cd.powerslot_percent', 'alert' => 100, 'alertMessage' => 'You have reached %s%% on your powerslot item'],
+         'aa_points'         => ['type' => 'i', 'name' => 'aa_points', 'alert' => 100, 'alertMessage' => 'You have reached %s ability points'],
+         'powerslot_item'    => ['type' => 's', 'name' => 'powerslot_item'],
+         'powerslot_percent' => ['type' => 'd', 'name' => 'powerslot_percent', 'alert' => 100, 'alertMessage' => 'You have reached %s%% on your powerslot item'],
       ];
 
       $updateFields = [];
