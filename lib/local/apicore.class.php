@@ -359,12 +359,12 @@ class APICore extends LWPLib\Base
       return (($success) ? true : false);
    }
 
-   public function logApiRequestFile($request, $response, $elapsedtime)
+   public function logApiRequestFile($token, $request, $response, $elapsedtime)
    {
       $this->debug(7,'method called');
 
-      $format = "('%s',%d,'%s','%s',%d,'%s',%1.5f,%d)\n";
-      $entry  = sprintf($format,gmdate('Y-m-d H:i:s'),$request->keyId,$request->pathInfo,$request->method,$response->statusCode,
+      $format = "('%s','%s',%d,'%s','%s',%d,'%s',%1.5f,%d)\n";
+      $entry  = sprintf($format,gmdate('Y-m-d H:i:s'),$request->clientIp,$token->keyId,$request->pathInfo,$request->method,$response->statusCode,
                                 $response->statusMessage,$elapsedtime,$response->contentLength);
 
       $result = file_put_contents($this->logDir.'/api.request.log',$entry,FILE_APPEND|LOCK_EX);
@@ -372,14 +372,16 @@ class APICore extends LWPLib\Base
       return (($result !== false) ? true : false);
    }
 
-   public function logApiRequest($request, $response, $elapsedtime)
+   public function logApiRequest($token, $request, $response, $elapsedtime)
    {
       $this->debug(7,'method called');
 
-      $sql = "insert into api_log (accessed,api_key_id,request,method,status_code,status_mesg,elapsed_sec,bytes) ".
+      $sql = "insert into api_log (accessed,client_ip,api_key_id,request,method,status_code,status_mesg,elapsed_sec,bytes) ".
              "values (now(),%d,'%s','%s',%d,'%s',%1.5f,%d)";
 
-      $insert = sprintf($sql,$request->keyId,
+      // Need to add client IP address to the log table
+
+      $insert = sprintf($sql,$this->db->escapeString($request->clientIp),$token->keyId,
                              $this->db->escapeString($request->pathinfo),$this->db->escapeString($request->method),
                              $response->statusCode,$this->db->escapeString($response->statusMessage),
                              $elapsedtime,$response->contentLength);
