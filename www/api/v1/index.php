@@ -20,16 +20,22 @@ $main = new Main([
    'adminlte'       => false,
 ]);
 
+
 $main->buildClass('apicore','ApiCore',$main->db(),'local/apicore.class.php');
 $main->buildClass('token','Token',null,'local/token.class.php');
 $main->buildClass('request','LWPLib\Request',null,'common/request.class.php');
 $main->buildClass('response','LWPLib\Response',null,'common/response.class.php');
 $main->buildClass('router','Router',null,'common/router.class.php');
 
+/** @var APICore $apicore */
 $apicore  = $main->obj('apicore');
+/** @var Router $router */
 $router   = $main->obj('router');
+/** @var LWPLib\Request $request */
 $request  = $main->obj('request');
+/** @var LWPLib\Response $response */
 $response = $main->obj('response');
+/** @var Token $token */
 $token    = $main->obj('token');
 
 $main->var('apiSettings',json_decode(file_get_contents(API_V1_CONFIGDIR.'/api.settings.json'),true));
@@ -123,7 +129,7 @@ if ($rateLimit && !$token->superUser && $token->valid) {
 }
 
 // Log user request and response to database
-$apicore->logApiRequestFile($request,$response,$main->elapsedRuntime());
+$apicore->logApiRequestFile($token,$request,$response,$main->elapsedRuntime());
 $main->debug->traceDuration("request logged"); 
 
 $main->debug->traceDuration("total time",$main->startMs);
