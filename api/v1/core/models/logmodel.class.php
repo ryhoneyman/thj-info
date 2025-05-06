@@ -79,7 +79,8 @@ class LogModel extends DefaultModel
 
             $updateFields[$updateColumn] = ['type' => $columnInfo['type'], 'value' => $updateValue];
             
-            $alertAllowed = (!preg_match('/^(powerslot_percent)$/',$columnKey)) ? true : ((preg_match('/(enchanted)$/i',$info['powerslot_item'])) ? true : false);
+            $alertAllowed = (!preg_match('/^powerslot_percent$/i',$columnKey)) ? true : ((preg_match('/(enchanted)$/i',$info['powerslot_item'])) ? true : false);
+            $alertAllowed = true;
 
             if (isset($updateAlert) && $alertAllowed && $updateValue >= $updateAlert) {
                if (isset($accountInfo['discord_id'])) {
