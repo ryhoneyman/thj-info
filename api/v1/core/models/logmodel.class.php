@@ -32,9 +32,9 @@ class LogModel extends DefaultModel
 
       $accountInfo = $this->api->getAccount($apiKeyId);
 
-      $this->debug(0,"ACCOUNT INFO: ".json_encode($accountInfo));
-      $this->debug(0,"CHARACTER NAME: $characterName");
-      $this->debug(0,"LOG ENTRIES: ".json_encode($logEntries));
+      $this->debug(9,"ACCOUNT INFO: ".json_encode($accountInfo));
+      $this->debug(9,"CHARACTER NAME: $characterName");
+      $this->debug(9,"LOG ENTRIES: ".json_encode($logEntries));
 
       $info = [];
 
@@ -90,7 +90,7 @@ class LogModel extends DefaultModel
          }
       }
 
-      $this->debug(0,"UPDATE FIELDS: ".json_encode($updateFields));
+      $this->debug(9,"UPDATE FIELDS: ".json_encode($updateFields));
 
       if ($updateFields) {
          $statement = "INSERT INTO character_data (account_id,name,updated,".implode(',',array_keys($updateFields)).") ". 
@@ -99,9 +99,9 @@ class LogModel extends DefaultModel
          $types     = 'is'.implode('',array_column($updateFields,'type'));
          $data      = array_merge([$accountInfo['id'],$characterName],array_column($updateFields,'value'));
 
-         $this->debug(0,"STATEMENT: $statement");
-         $this->debug(0,"TYPES:     $types");
-         $this->debug(0,"DATA:      ".json_encode($data));
+         $this->debug(9,"STATEMENT: $statement");
+         $this->debug(9,"TYPES:     $types");
+         $this->debug(9,"DATA:      ".json_encode($data));
 
          $result = $this->main->db()->bindExecute($statement,$types,$data);
 
