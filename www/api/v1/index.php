@@ -3,7 +3,7 @@ include_once 'thj-info-init.php';
 include_once 'local/main.class.php';
 
 $main = new Main([
-   'debugLevel'     => 6,
+   'debugLevel'     => 1,
    'debugBuffer'    => true,
    'debugLogDir'    => API_V1_LOGDIR,
    'errorReporting' => false,
