@@ -16,7 +16,7 @@ class LogModel extends DefaultModel
          'You gain experience!!',
          'Your .* absorbs energy',
          'Your .* spell has worn',
-         '\\S+ tells you, \'Attacking',
+         //'\\S+ tells you, \'Attacking',
          'I have \\S+ percent',
          'You have gained an ability point'
       ];
