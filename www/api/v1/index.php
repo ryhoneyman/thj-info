@@ -75,8 +75,12 @@ if ($request->token) {
 // Debug token object
 //$main->debug->traceDuration("Token: ".json_encode($token));
 
-// Check if this token is currently exceeds its limits
-if (!$rateLimit || $token->superUser || !$token->limitExceeds) {
+// Determine rate limiting; there's no limit reached if:
+//  * We're not ratelimiting, 
+//  * We're the super user
+//  * The token is invalid
+//  * If the token is not currently exceeding limits
+if (!$rateLimit || $token->superUser || !$token->valid || !$token->limitExceeds) {
    // Match the request path with known endpoints and determine if it exists
    if (!$router->processRequestPath($request)) { 
       $response->setStatus(404,'Resource Not Found');
