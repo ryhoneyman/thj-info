@@ -82,7 +82,7 @@ class LogModel extends DefaultModel
                $alertMessage = null;
 
                if ($columnKey == 'powerslot_percent' && $updateValue >= 100 && preg_match('/\(enchanted\)$/i',$info['powerslot_item'])) {
-                  $alertMessage = sprintf("You have obtained `%s` from the powerslot on `%s`",str_replace('(Enchanted)','(Legendary)',$info['powerslot_item']),$characterName);
+                  $alertMessage = sprintf("You have finished `%s` from the powerslot on `%s`",str_replace('(Enchanted)','(Legendary)',$info['powerslot_item']),$characterName);
                }
                else if ($columnKey == 'aa_points' && $updateValue >= 100) {
                   $alertMessage = sprintf("You have reached `%s` ability points on `%s`",$updateValue,$characterName);
