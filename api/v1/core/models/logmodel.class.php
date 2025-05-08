@@ -62,29 +62,35 @@ class LogModel extends DefaultModel
       }
 
       $characterColumns = [
-         'aa_points'         => ['type' => 'i', 'name' => 'aa_points', 'alert' => 100, 'alertMessage' => 'You have reached %s ability points'],
+         'aa_points'         => ['type' => 'i', 'name' => 'aa_points', 'alert' => true ],
          'powerslot_item'    => ['type' => 's', 'name' => 'powerslot_item'],
-         'powerslot_percent' => ['type' => 'd', 'name' => 'powerslot_percent', 'alert' => 100, 'alertMessage' => 'You have reached %s%% on your powerslot item'],
+         'powerslot_percent' => ['type' => 'd', 'name' => 'powerslot_percent', 'alert' => true ],
       ];
 
       $updateFields = [];
 
       foreach ($characterColumns as $columnKey => $columnInfo) {
          $updateColumn = $columnInfo['name'];
-         $updateAlert  = $columnInfo['alert'] ?? null;
-         $alertMessage = $columnInfo['alertMessage'] ?? "$updateColumn has reached %s";
+         $alertEnabled = $columnInfo['alert'] ?? false;
 
          if (isset($info[$columnKey])) { 
             $updateValue = $info[$columnKey];
 
             $updateFields[$updateColumn] = ['type' => $columnInfo['type'], 'value' => $updateValue];
             
-            $alertAllowed = (!preg_match('/^powerslot_percent$/i',$columnKey)) ? true : ((preg_match('/(enchanted)$/i',$info['powerslot_item'])) ? true : false);
-            $alertAllowed = true;
+            if ($alertEnabled) {
+               $alertMessage = null;
 
-            if (isset($updateAlert) && $alertAllowed && $updateValue >= $updateAlert) {
-               if (isset($accountInfo['discord_id'])) {
-                  $this->api->sendMessage($accountInfo['discord_id'],sprintf($alertMessage,$updateValue));
+               if ($columnKey == 'powerslot_percent' && $updateValue >= 100 && preg_match('/\(enchanted\)$/i',$info['powerslot_item'])) {
+                  $alertMessage = sprintf("You have obtained %s from the powerslot on %s",str_replace('(Enchanted)','(Legendary)',$info['powerslot_item']),$characterName);
+               }
+               else if ($columnKey == 'aa_points' && $updateValue >= 100) {
+                  $alertMessage = sprintf("You have reached %s ability points on %s",$updateValue,$characterName);
+               }
+
+               if ($alertMessage && isset($accountInfo['discord_id'])) {
+                  $this->api->sendMessage($accountInfo['discord_id'],$alertMessage);
+                  $this->debug(1,sprintf("Queued alert message to %s: %s",$accountInfo['discord_name'],$alertMessage));
                }
             }
          }
