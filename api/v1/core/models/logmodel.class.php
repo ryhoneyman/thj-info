@@ -90,7 +90,7 @@ class LogModel extends DefaultModel
 
                if ($alertMessage && isset($accountInfo['discord_id'])) {
                   $this->api->sendMessage($accountInfo['discord_id'],$alertMessage);
-                  $this->debug(1,sprintf("Queued alert message to %s: %s",$accountInfo['discord_name'],$alertMessage));
+                  $this->debug(9,sprintf("Queued alert message to %s: %s",$accountInfo['discord_name'],$alertMessage));
                }
             }
          }
