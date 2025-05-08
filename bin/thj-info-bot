@@ -13,6 +13,7 @@ $main = new Main([
    'sendHeaders'    => false,
    'database'       => true,
    'dbConfigDir'    => APP_CONFIGDIR,
+   'dbConfigFile'   => APP_CONFIGDIR.'/db.prod.thjdata.conf',
    'fileDefine'     => APP_CONFIGDIR.'/defines.json',
    'dbDefine'       => 'MY_%',
    'input'          => false,
@@ -33,23 +34,23 @@ use Discord\Builders\Components\Option;
 use Discord\Parts\User\User;
 use Discord\Parts\Channel\Message; 
 
-
-
 // Create a $discord BOT
 $discord = new DiscordCommandClient([
     'token' => MY_DISCORD_BOT_TOKEN, 
 ]);
 
-$discord->listenCommand('thjregister', function (Interaction $interaction) use ($main) {
+$discord->listenCommand('thjregister', function (Interaction $interaction) use ($discord, $main) {
     // Ignore messages from any Bots
     if ($interaction->user->bot) return;
+
+    $main->debug(1,sprintf("%s asked to register", $interaction->user->username));
 
     /** @var $api MyAPI */
     $api = $main->obj('api');
 
     $result = $api->registerAccount($interaction->user->id, $interaction->user->username);
 
-    $builder = MessageBuilder::new()->setFlags(64); // 64 is the flag for ephemeral messages
+    $builder = MessageBuilder::new(); 
 
     if ($result === false) {
         $response = 'Error: '.$api->error();
@@ -61,8 +62,23 @@ $discord->listenCommand('thjregister', function (Interaction $interaction) use (
 
     $builder->setContent($response);
 
+    $discord->users->fetch($interaction->user->id)
+                    ->then(function (User $user) use ($builder) {
+                        return $user->sendMessage($builder);
+                    })
+                    ->then(function (Message $sentDm) use ($main) {
+                        $main->debug(0,"DM successfully sent to {$sentDm->channel->recipient->username}");
+                    })
+                    ->otherwise(function (\Exception $error) use ($interaction) {
+                        echo "Failed to fetch user or send DM (ID: {$interaction->user->id}): {$error->getMessage()}\n";
+                        // Common reasons: Invalid ID, User not found, Bot doesn't share server, DMs disabled/blocked.
+                    });
+
     // Respond to the interaction
-    $interaction->respondWithMessage($builder);
+    $interaction->respondWithMessage(
+        MessageBuilder::new()
+            ->setContent("Registration request sent via DM.")
+    );
 });
 
 
@@ -70,17 +86,47 @@ $discord->listenCommand('thjinfo', function (Interaction $interaction) use ($mai
     // Ignore messages from any Bots
     if ($interaction->user->bot) return;
 
+    $main->debug(1,sprintf("%s asked for character info", $interaction->user->username));
+
     /** @var $api MyAPI */
     $api = $main->obj('api');
 
     $characterData = $api->getCharacterData($interaction->user->id);
 
-    $response = sprintf("```\nLevel: %s\nAA Points: %s\nPowerslot Item: %s (%0.2f%%)\n```",
-                        $characterData['level'] ?: 'Unknown',
-                        $characterData['aa_points'] ?? 0,
-                        $characterData['powerslot_item'] ?? 'None',
-                        $characterData['powerslot_percent'] ?? 0  
-    );
+    $response = "Character Information:\n";
+
+    $columnWidths = [
+        'Active' => 8,
+        'Name' => 15,
+        'Level' => 9,
+        'AA Points' => 11,
+        'Powerslot Item (Percent)' => 60,
+    ];
+
+    $tableFormatList = array_map(function($width) { return "%-{$width}s"; }, array_values($columnWidths));
+    $tableFormatPlus = '+'.implode('+',$tableFormatList).'+';
+    $tableFormatPipe = '|'.implode('|',$tableFormatList).'|';
+    $tableHeader = vsprintf($tableFormatPipe, array_map(function($item) { return " $item "; },array_keys($columnWidths)));
+    $tableBorder = vsprintf($tableFormatPlus, array_map(function($width) { return str_repeat('-', $width); }, array_values($columnWidths)));
+
+    if (empty($characterData)) {
+        $response .= "```No characters found.```";
+    }
+    else {
+        $response .= "```\n$tableBorder\n$tableHeader\n$tableBorder\n";
+        foreach ($characterData as $characterKey => $characterInfo) {
+            $characterActive = ($characterInfo['updated'] > time() - 900) ? 'Yes' : 'No';
+
+            $response .= vsprintf("$tableFormatPipe\n", array_map(function($item) { return " $item "; },[
+                $characterActive,
+                $characterInfo['name'] ?: 'Unknown',
+                $characterInfo['level'] ?: 'Unknown',
+                $characterInfo['aa_points'] ?? 0,
+                sprintf("%s (%0.2f%%)", $characterInfo['powerslot_item'] ?? 'None', $characterInfo['powerslot_percent'] ?? 0)
+            ]));
+        }
+        $response .= "$tableBorder\n```";
+    }
 
     // Respond to the interaction
     $interaction->respondWithMessage(
@@ -91,8 +137,8 @@ $discord->listenCommand('thjinfo', function (Interaction $interaction) use ($mai
 });
 
 $discord->on('init', function (DiscordCommandClient $discord) use ($main) {
-    echo "Bot is ready!" . PHP_EOL;
-    echo "Logged in as: {$discord->user->username}#{$discord->user->discriminator}" . PHP_EOL;
+    $main->debug(0,"Bot is ready!");
+    $main->debug(0,"Logged in as: {$discord->user->username}#{$discord->user->discriminator}");
 
     /** @var $api MyAPI */
     $api = $main->obj('api');
@@ -102,7 +148,7 @@ $discord->on('init', function (DiscordCommandClient $discord) use ($main) {
     $loop = $discord->getLoop();
 
     // Add a timer that executes the callback every 2.0 seconds
-    $timer = $loop->addPeriodicTimer(2.0, function () use ($discord, $api) {
+    $timer = $loop->addPeriodicTimer(2.0, function () use ($discord, $main, $api) {
         $messageQueue = $api->getMessageQueue(); 
 
         if ($messageQueue) {
@@ -117,8 +163,8 @@ $discord->on('init', function (DiscordCommandClient $discord) use ($main) {
                     ->then(function (User $user) use ($messageContent) {
                         return $user->sendMessage($messageContent);
                     })
-                    ->then(function (Message $sentDm) use (&$sentIds,$messageId) {
-                        echo "DM successfully sent to {$sentDm->channel->recipient->username}\n";
+                    ->then(function (Message $sentDm) use ($main,&$sentIds,$messageId) {
+                        $main->debug(0,"DM successfully sent to {$sentDm->channel->recipient->username}");
                         $sentIds[] = $messageId;
 
                     })
