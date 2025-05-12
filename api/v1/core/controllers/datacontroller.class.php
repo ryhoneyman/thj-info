@@ -66,7 +66,7 @@ class DataController extends DefaultController
 
       if ($types && !$data) { return $this->standardError("Invalid data specified",500); }
 
-      if (!$this->connectDatabase($dbName)) { return $this->standardError("Could not connect to database $dbName"); }
+      if (!$this->raiseDatabase($dbName)) { return $this->standardError("Could not connect to database $dbName"); }
 
       $db       = $this->main->db($dbName);
       $dbResult = $db->bindQuery($statement,$types,$data,array('index' => $useIndex, 'single' => $singleReturn));
@@ -99,7 +99,7 @@ class DataController extends DefaultController
 
       if (!preg_match('/^[dfis]+$/',$types)) { return $this->standardError("Invalid types specified",500); }
 
-      if (!$this->connectDatabase($dbName)) { return $this->standardError("Could not connect to database $dbName"); }
+      if (!$this->raiseDatabase($dbName)) { return $this->standardError("Could not connect to database $dbName"); }
 
       $db       = $this->main->db($dbName);
       $dbResult = $db->bindExecute($statement,$types,$data);
@@ -136,7 +136,7 @@ class DataController extends DefaultController
 
       if (!preg_match('/^select/i',$queryFull)) { return $this->standardError("invalid query specified (select only)",500); }
 
-      if (!$this->connectDatabase($dbName)) { return $this->standardError("Could not connect to database $dbName"); }
+      if (!$this->raiseDatabase($dbName)) { return $this->standardError("Could not connect to database $dbName"); }
 
       $db       = $this->main->db($dbName);
       $dbResult = $db->query($queryFull,array('index' => $index, 'single' => $singleReturn));
@@ -171,7 +171,7 @@ class DataController extends DefaultController
       
       if (!$this->tableConfig[$tableName]) { return $this->standardError("Unknown table $tableName specified",400); }
 
-      if (!$this->connectDatabase($dbName)) { return $this->standardError("Could not connect to database $dbName"); }
+      if (!$this->raiseDatabase($dbName)) { return $this->standardError("Could not connect to database $dbName"); }
 
       $db              = $this->main->db($dbName);
       $tableInfo       = $this->tableConfig[$tableName];
@@ -421,12 +421,12 @@ class DataController extends DefaultController
    }
    
    /**
-    * connectDatabase
+    * raiseDatabase
     *
     * @param  string $dbName
     * @return bool
     */
-   protected function connectDatabase($dbName)
+   protected function raiseDatabase($dbName)
    {
       $dbConfigFile = ($dbName) ? sprintf("db.%s.conf",$dbName) : null;
 
