@@ -15,14 +15,14 @@ $main = new Main([
    'dbConfigDir'    => APP_CONFIGDIR,
    'dbConfigFile'   => APP_CONFIGDIR.'/db.prod.eqecho.conf',
    'fileDefine'     => APP_CONFIGDIR.'/defines.json',
-   'dbDefine'       => 'MY_%',
+   'dbDefine'       => ['PROD_%','MY_%'],
    'input'          => false,
    'html'           => false,
    'adminlte'       => false,
    'cliLongOpts'    => null,
 ]);
 
-$apiOptions = ['baseUrl' => MY_API_URL, 'authToken' => MY_API_AUTH_TOKEN];
+$apiOptions = ['baseUrl' => PROD_API_URL, 'authToken' => PROD_API_AUTH_TOKEN];
 
 if (!$main->buildClass('api','MyAPI',$apiOptions,'local/myapi.class.php')) { exit; }
 
@@ -100,8 +100,9 @@ $discord->listenCommand('eqeinfo', function (Interaction $interaction) use ($mai
     $columnWidths = [
         'Active' => 8,
         'Name' => 15,
+        'Server' => 9,
         'Level' => 9,
-        'AA Points' => 11,
+        'AA' => 4,
         'Powerslot Item (Percent)' => 57,
     ];
 
@@ -122,6 +123,7 @@ $discord->listenCommand('eqeinfo', function (Interaction $interaction) use ($mai
             $response .= vsprintf("$tableFormatPipe\n", array_map(function($item) { return " $item "; },[
                 $characterActive,
                 $characterInfo['name'] ?: 'Unknown',
+                $characterInfo['server'] ?: 'Unknown',
                 $characterInfo['level'] ?: 'Unknown',
                 $characterInfo['aa_points'] ?? 0,
                 sprintf("%s (%0.2f%%)", $characterInfo['powerslot_item'] ?? 'None', $characterInfo['powerslot_percent'] ?? 0)

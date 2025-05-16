@@ -33,8 +33,8 @@ use Discord\Parts\Interactions\Command\Command;
 use Discord\Repository\Interaction\GlobalCommandRepository;
 
 $directives = [
-    'delete'   => false,
-    'register' => true,
+    'delete'   => true,
+    'register' => false,
 ];
 
 // Create a $discord BOT
@@ -45,7 +45,8 @@ $discord = new DiscordCommandClient([
 $discord->on('init', function (DiscordCommandClient $discord) use ($directives) {
 
     if ($directives['delete']) {
-        $discord->application->commands->delete("1372955637423538318");
+        $discord->application->commands->delete("1372959257007493230");
+        $discord->application->commands->delete("1367929993698476195");
         //$discord->application->commands->delete("1367929870667091981");
     }
 
