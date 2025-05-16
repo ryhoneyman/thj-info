@@ -430,6 +430,6 @@ class DataController extends DefaultController
    {
       $dbConfigFile = ($dbName) ? sprintf("db.%s.conf",$dbName) : null;
 
-      return $this->main->connectDatabase($dbConfigFile,$dbName);
+      return $this->main->connectDatabase($dbName,$dbConfigFile);
    }
 }
