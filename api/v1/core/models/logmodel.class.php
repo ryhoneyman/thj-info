@@ -104,7 +104,7 @@ class LogModel extends DefaultModel
                       "VALUES (?,?,?,now(),".implode(',',array_fill(0,count($updateFields),'?')).") ".
                       "ON DUPLICATE KEY UPDATE updated=values(updated), ".implode(', ',array_map(function($field) { return "$field=values($field)"; },array_keys($updateFields)));
          $types     = 'is'.implode('',array_column($updateFields,'type'));
-         $data      = array_merge([$accountInfo['id'],$characterName,$serverName],array_column($updateFields,'value'));
+         $data      = array_merge([$accountInfo['id'],$characterName,$serverName ?? ''],array_column($updateFields,'value'));
 
          $this->debug(9,"STATEMENT: $statement");
          $this->debug(9,"TYPES:     $types");
