@@ -1,7 +1,7 @@
 <?php
 
-define('APP_BASEDIR','/opt/thj-info');
-#define('APP_BASEDIR','/home/u690380958/domains/thj.bytelligence.com');  ### Hostinger
+define('APP_BASEDIR','/opt/eqecho');
+#define('APP_BASEDIR','/home/u690380958/domains/eqecho.bytelligence.com');  ### Hostinger
 define('APP_LIBDIR',APP_BASEDIR.'/lib');
 define('APP_WEBDIR',APP_BASEDIR.'/www');
 define('APP_CACHEDIR',APP_BASEDIR.'/cache');   // dynamic cache

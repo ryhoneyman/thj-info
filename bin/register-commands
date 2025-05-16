@@ -1,8 +1,15 @@
 #!/usr/bin/php
 <?php
-include_once 'thj-info-init.php';
+include_once 'eqecho-init.php';
+use Discord\Builders\CommandBuilder;
+use Discord\Parts\Guild\Integration;
+use Discord\Parts\Interactions\Interaction;
+use Discord\Parts\OAuth\Application;
 include_once 'local/main.class.php';
 include_once 'autoload.php';
+
+// https://discord.com/oauth2/authorize?client_id=1367925256546942996&permissions=117760
+// https://discord.com/oauth2/authorize?client_id=1367925256546942996&scope=bot&permissions=117760
 
 $main = new Main([
    'debugLevel'     => 9,
@@ -27,7 +34,7 @@ use Discord\Repository\Interaction\GlobalCommandRepository;
 
 $directives = [
     'delete'   => false,
-    'register' => false,
+    'register' => true,
 ];
 
 // Create a $discord BOT
@@ -38,7 +45,7 @@ $discord = new DiscordCommandClient([
 $discord->on('init', function (DiscordCommandClient $discord) use ($directives) {
 
     if ($directives['delete']) {
-        //$discord->application->commands->delete("1367929868909809797");
+        $discord->application->commands->delete("1372955637423538318");
         //$discord->application->commands->delete("1367929870667091981");
     }
 
@@ -57,6 +64,7 @@ $discord->on('init', function (DiscordCommandClient $discord) use ($directives) 
             /** @var Command $command */
             foreach ($commands as $command) {
                 echo " - Name: {$command->name} (ID: {$command->id})", PHP_EOL;
+                print json_encode($command,JSON_PRETTY_PRINT)."\n";
                 // You can access other properties like $command->description, $command->options, etc.
             }
         }
@@ -68,16 +76,27 @@ $discord->on('init', function (DiscordCommandClient $discord) use ($directives) 
 
     if ($directives['register']) {
         $commandRegister = new Command($discord,[
-            'name' => 'thjregister', 
-            'description' => 'THJ Register User', 
+            'name' => 'eqereg', 
+            'description' => 'EQEcho Register User', 
+            
         ]);
         $discord->application->commands->save($commandRegister);
 
         $commandInfo = new Command($discord,[
-            'name' => 'thjinfo', 
-            'description' => 'THJ Character Info', 
+            'name' => 'eqeinfo', 
+            'description' => 'EQEcho Character Info', 
+            'contexts' => [
+                Interaction::CONTEXT_TYPE_GUILD,
+                Interaction::CONTEXT_TYPE_BOT_DM,
+                Interaction::CONTEXT_TYPE_PRIVATE_CHANNEL,
+            ],
+            'integration_types' => [
+                Application::INTEGRATION_TYPE_GUILD_INSTALL,
+                Application::INTEGRATION_TYPE_USER_INSTALL,
+            ], 
         ]);
         $discord->application->commands->save($commandInfo);
     }
+        
 
 });

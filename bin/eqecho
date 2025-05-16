@@ -1,6 +1,6 @@
 #!/usr/bin/php
 <?php
-include_once 'thj-info-init.php';
+include_once 'eqecho-init.php';
 include_once 'local/main.class.php';
 include_once 'autoload.php';
 
@@ -13,7 +13,7 @@ $main = new Main([
    'sendHeaders'    => false,
    'database'       => true,
    'dbConfigDir'    => APP_CONFIGDIR,
-   'dbConfigFile'   => APP_CONFIGDIR.'/db.prod.thjdata.conf',
+   'dbConfigFile'   => APP_CONFIGDIR.'/db.prod.eqecho.conf',
    'fileDefine'     => APP_CONFIGDIR.'/defines.json',
    'dbDefine'       => 'MY_%',
    'input'          => false,
@@ -39,7 +39,7 @@ $discord = new DiscordCommandClient([
     'token' => MY_DISCORD_BOT_TOKEN, 
 ]);
 
-$discord->listenCommand('thjregister', function (Interaction $interaction) use ($discord, $main) {
+$discord->listenCommand('eqereg', function (Interaction $interaction) use ($discord, $main) {
     // Ignore messages from any Bots
     if ($interaction->user->bot) return;
 
@@ -47,6 +47,8 @@ $discord->listenCommand('thjregister', function (Interaction $interaction) use (
 
     /** @var $api MyAPI */
     $api = $main->obj('api');
+
+    // Need to check if the user is already registered and if so, allow them to update their credentials if they use a force command
 
     $result = $api->registerAccount($interaction->user->id, $interaction->user->username);
 
@@ -82,7 +84,7 @@ $discord->listenCommand('thjregister', function (Interaction $interaction) use (
 });
 
 
-$discord->listenCommand('thjinfo', function (Interaction $interaction) use ($main) {
+$discord->listenCommand('eqeinfo', function (Interaction $interaction) use ($main) {
     // Ignore messages from any Bots
     if ($interaction->user->bot) return;
 
@@ -100,7 +102,7 @@ $discord->listenCommand('thjinfo', function (Interaction $interaction) use ($mai
         'Name' => 15,
         'Level' => 9,
         'AA Points' => 11,
-        'Powerslot Item (Percent)' => 60,
+        'Powerslot Item (Percent)' => 57,
     ];
 
     $tableFormatList = array_map(function($width) { return "%-{$width}s"; }, array_values($columnWidths));
@@ -163,8 +165,8 @@ $discord->on('init', function (DiscordCommandClient $discord) use ($main) {
                     ->then(function (User $user) use ($messageContent) {
                         return $user->sendMessage($messageContent);
                     })
-                    ->then(function (Message $sentDm) use ($main,&$sentIds,$messageId) {
-                        $main->debug(0,"DM successfully sent to {$sentDm->channel->recipient->username}");
+                    ->then(function (Message $sentDm) use ($main,&$sentIds,$messageId,$messageContent) {
+                        $main->debug(0,"Notified {$sentDm->channel->recipient->username}: {$messageContent}");
                         $sentIds[] = $messageId;
 
                     })

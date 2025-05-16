@@ -5,7 +5,7 @@ include_once 'common/apibase.class.php';
 class MyAPI extends LWPLib\APIBase
 {
    protected $version         = 1.0;
-   private   $defaultDatabase = 'thjdata';
+   private   $defaultDatabase = 'eqecho';
    
    /**
     * __construct

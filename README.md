@@ -1,2 +1,2 @@
-# thj-info
-THJ log parser and information processor
+# eqecho
+EQEmu log parser and information processor

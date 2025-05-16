@@ -1,5 +1,5 @@
 <?php
-include_once 'thj-info-init.php';
+include_once 'eqecho-init.php';
 include_once 'local/main.class.php';
 
 $main = new Main([

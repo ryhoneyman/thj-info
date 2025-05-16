@@ -1,6 +1,6 @@
 #!/usr/bin/php
 <?php
-include_once 'thj-info-init.php';
+include_once 'eqecho-init.php';
 include_once 'local/main.class.php';
 include_once 'autoload.php';
 
