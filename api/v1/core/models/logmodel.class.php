@@ -30,8 +30,6 @@ class LogModel extends DefaultModel
 
       if ($serverName) { $serverName = strtoupper($serverName); }
 
-      $this->debug->writeFile('logmodel.processlog.entry.log',"LogModel: processLog called with characterName=$characterName, serverName=$serverName");
-
       if (!is_array($logEntries)) { $logEntries = [$logEntries]; }
 
       $accountInfo = $this->api->getAccount($apiKeyId);
@@ -106,7 +104,7 @@ class LogModel extends DefaultModel
       if ($updateFields) {
          $statement = "INSERT INTO character_data (account_id,name,server,updated,".implode(',',array_keys($updateFields)).") ". 
                       "VALUES (?,?,?,now(),".implode(',',array_fill(0,count($updateFields),'?')).") ".
-                      "ON DUPLICATE KEY UPDATE updated=values(updated), ".implode(', ',array_map(function($field) { return "$field=values($field)"; },array_keys($updateFields)));
+                      "ON DUPLICATE KEY UPDATE server=values(server), updated=values(updated), ".implode(', ',array_map(function($field) { return "$field=values($field)"; },array_keys($updateFields)));
          $types     = 'iss'.implode('',array_column($updateFields,'type'));
          $data      = array_merge([$accountInfo['id'],$characterName,$serverName],array_column($updateFields,'value'));
 
