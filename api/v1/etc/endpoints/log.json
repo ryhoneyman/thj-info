@@ -7,6 +7,8 @@
          "function": "processLog",
          "category": "Log",
          "param": {
+            "characterName": { "required": true, "constraint": "string", "description": "Character name" },
+            "serverName": { "required": true, "constraint": "string", "description": "Server name" },
             "log": { "required": true, "constraint": "array", "description": "Log lines" }
          }
       }
