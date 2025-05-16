@@ -30,7 +30,7 @@ class LogModel extends DefaultModel
 
       if ($serverName) { $serverName = strtoupper($serverName); }
 
-      $this->main->debug->writeDebug('logmodel.processlog.entry.log',"LogModel: processLog called with characterName=$characterName, serverName=$serverName");
+      $this->debug->writeFile('logmodel.processlog.entry.log',"LogModel: processLog called with characterName=$characterName, serverName=$serverName");
 
       if (!is_array($logEntries)) { $logEntries = [$logEntries]; }
 
