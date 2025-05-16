@@ -29,7 +29,9 @@ class LogModel extends DefaultModel
       if (!$apiKeyId = $this->main->obj('token')->keyId) { $this->error('invalid api key'); return false; };
 
       if ($serverName) { $serverName = strtoupper($serverName); }
-      
+
+      $this->debug->writeDebug('logmodel.processlog.entry.log',"LogModel: processLog called with characterName=$characterName, serverName=$serverName");
+
       if (!is_array($logEntries)) { $logEntries = [$logEntries]; }
 
       $accountInfo = $this->api->getAccount($apiKeyId);
@@ -120,8 +122,6 @@ class LogModel extends DefaultModel
          }
       }
 
-
-      
       return true;
    }
 }
