@@ -39,11 +39,12 @@ class LogController extends DefaultController
       if (!$this->logModel->ready)  { $this->notReady($this->logModel->error); return false; }
 
       $characterName = $parameters['characterName'] ?? null;
+      $serverName    = $parameters['serverName'] ?? null;
       $logEntries    = $parameters['log'];
 
       if (!is_array($logEntries)) { return $this->standardError('invalid log data, expecting array',422,'Unprocessable Entity'); }
 
-      $result = $this->logModel->processLog($characterName,$logEntries);
+      $result = $this->logModel->processLog($characterName,$serverName,$logEntries);
 
       if ($result === false) { return $this->standardError($this->logModel->error); }
 

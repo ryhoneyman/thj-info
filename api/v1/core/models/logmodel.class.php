@@ -22,7 +22,7 @@ class LogModel extends DefaultModel
       ];
    }
 
-   public function processLog($characterName, $logEntries)
+   public function processLog($characterName, $serverName, $logEntries)
    {
       if ($this->main->connectDatabase() === false) { $this->error('database not available'); return false; }
 
@@ -34,6 +34,7 @@ class LogModel extends DefaultModel
 
       $this->debug(9,"ACCOUNT INFO: ".json_encode($accountInfo));
       $this->debug(9,"CHARACTER NAME: $characterName");
+      $this->debug(9,"SERVER NAME: $serverName");
       $this->debug(9,"LOG ENTRIES: ".json_encode($logEntries));
 
       $info = [];
@@ -99,11 +100,11 @@ class LogModel extends DefaultModel
       $this->debug(9,"UPDATE FIELDS: ".json_encode($updateFields));
 
       if ($updateFields) {
-         $statement = "INSERT INTO character_data (account_id,name,updated,".implode(',',array_keys($updateFields)).") ". 
-                      "VALUES (?,?,now(),".implode(',',array_fill(0,count($updateFields),'?')).") ".
+         $statement = "INSERT INTO character_data (account_id,name,server,updated,".implode(',',array_keys($updateFields)).") ". 
+                      "VALUES (?,?,?,now(),".implode(',',array_fill(0,count($updateFields),'?')).") ".
                       "ON DUPLICATE KEY UPDATE updated=values(updated), ".implode(', ',array_map(function($field) { return "$field=values($field)"; },array_keys($updateFields)));
          $types     = 'is'.implode('',array_column($updateFields,'type'));
-         $data      = array_merge([$accountInfo['id'],$characterName],array_column($updateFields,'value'));
+         $data      = array_merge([$accountInfo['id'],$characterName,$serverName],array_column($updateFields,'value'));
 
          $this->debug(9,"STATEMENT: $statement");
          $this->debug(9,"TYPES:     $types");
