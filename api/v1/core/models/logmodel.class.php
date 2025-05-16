@@ -28,7 +28,7 @@ class LogModel extends DefaultModel
 
       if (!$apiKeyId = $this->main->obj('token')->keyId) { $this->error('invalid api key'); return false; };
 
-      if ($serverName) { $serverName = strtoupper($serverName); }
+      $serverName = ($serverName) ? strtoupper($serverName) : 'UNKNOWN';
 
       if (!is_array($logEntries)) { $logEntries = [$logEntries]; }
 
@@ -104,7 +104,7 @@ class LogModel extends DefaultModel
       if ($updateFields) {
          $statement = "INSERT INTO character_data (account_id,name,server,updated,".implode(',',array_keys($updateFields)).") ". 
                       "VALUES (?,?,?,now(),".implode(',',array_fill(0,count($updateFields),'?')).") ".
-                      "ON DUPLICATE KEY UPDATE server=values(server), updated=values(updated), ".implode(', ',array_map(function($field) { return "$field=values($field)"; },array_keys($updateFields)));
+                      "ON DUPLICATE KEY UPDATE updated=values(updated), ".implode(', ',array_map(function($field) { return "$field=values($field)"; },array_keys($updateFields)));
          $types     = 'iss'.implode('',array_column($updateFields,'type'));
          $data      = array_merge([$accountInfo['id'],$characterName,$serverName],array_column($updateFields,'value'));
 
