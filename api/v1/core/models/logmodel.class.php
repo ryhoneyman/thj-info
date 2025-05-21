@@ -17,6 +17,7 @@ class LogModel extends DefaultModel
          'Your .* absorbs energy',
          'Your .* spell has worn',
          'You have improved .* at a cost of',
+         'You have gained the ability .* at a cost of',
          //'\\S+ tells you, \'Attacking',
          'I have \\S+ percent',
          'You have gained an ability point'
@@ -58,11 +59,12 @@ class LogModel extends DefaultModel
                $alertMessage = sprintf("You have reached ``%s`` ability points on ``%s``",$info['aa_points'],$characterName);
             }
          }
-         else if (preg_match('/you have improved (.*?) at a cost of (\d+) ability points/i',$logEntry,$match)) {
+         else if (preg_match('/you have gained the ability "(.*?)" at a cost of (\d+) ability points/i',$logEntry,$match) ||
+                  preg_match('/you have improved (.*?) at a cost of (\d+) ability points/i',$logEntry,$match)) {
             $skillName = $match[1];
             $aaCost    = $match[2];
 
-            $alertMessage = sprintf("You have trained ``%s`` for ``%s`` points on ``%s``",$skillName,$aaCost,$characterName);
+            $alertMessage = sprintf("You have trained ``%s`` for %s points on ``%s``",$skillName,$aaCost,$characterName);
          }
          else if (preg_match('/your \[(.*?)\] absorbs energy,.*\((\S+)%\)/i',$logEntry,$match)) {
             $info['powerslot_item']    = $match[1];
