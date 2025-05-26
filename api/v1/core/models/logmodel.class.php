@@ -20,7 +20,8 @@ class LogModel extends DefaultModel
          'You have gained the ability .* at a cost of',
          //'\\S+ tells you, \'Attacking',
          'I have \\S+ percent',
-         'You have gained an ability point'
+         'You have gained an ability point',
+         'You have gained a level!'
       ];
    }
 
@@ -82,6 +83,11 @@ class LogModel extends DefaultModel
             $petName = $match[1];
             $info['pet'][$petName]['attacking'] = $match[2];
          }
+         else if (preg_match('/you have gained a level!\s+welcome to level (\d+)!/i',$logEntry,$match)) {
+            $info['level'] = $match[1];
+
+            $alertMessage = sprintf("You have reached level ``%s`` on ``%s``",$info['level'],$characterName);
+         }
 
          if ($alertMessage && $discordId) {
             $this->api->sendMessage($discordId,$alertMessage);
@@ -90,6 +96,7 @@ class LogModel extends DefaultModel
       }
 
       $characterColumns = [
+         'level'             => ['type' => 'i', 'name' => 'level' ],
          'aa_points'         => ['type' => 'i', 'name' => 'aa_points' ],
          'powerslot_item'    => ['type' => 's', 'name' => 'powerslot_item'],
          'powerslot_percent' => ['type' => 'd', 'name' => 'powerslot_percent' ],
