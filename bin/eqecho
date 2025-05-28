@@ -43,12 +43,33 @@ $discord->listenCommand('eqereg', function (Interaction $interaction) use ($disc
     // Ignore messages from any Bots
     if ($interaction->user->bot) return;
 
+    $options = $interaction->data->options;
+
+    // Extract the parameters (if any)
+    $params = [];
+    if ($options) {
+        foreach ($options as $option) {
+            $params[$option->name] = $option->value;
+        }
+    }
+
     $main->debug(1,sprintf("%s asked to register", $interaction->user->username));
 
     /** @var $api MyAPI */
     $api = $main->obj('api');
 
+    $forceEnabled = (isset($params['force']) && $params['force']) ? true : false;
+
     // Need to check if the user is already registered and if so, allow them to update their credentials if they use a force command
+    if ($api->getAccountByDiscordId($interaction->user->id) && !$forceEnabled) {
+        $response = "You are already registered with EQEcho.  If you want to update your credentials, please use the `/eqereg force` command.";
+        $interaction->respondWithMessage(
+            MessageBuilder::new()
+                ->setContent($response)
+                ->setComponents([])
+        );
+        return;
+    }
 
     $result = $api->registerAccount($interaction->user->id, $interaction->user->username);
 
@@ -88,6 +109,18 @@ $discord->listenCommand('eqeinfo', function (Interaction $interaction) use ($mai
     // Ignore messages from any Bots
     if ($interaction->user->bot) return;
 
+    $options = $interaction->data->options;
+
+    // Extract the parameters (if any)
+    $params = [];
+    if ($options) {
+        foreach ($options as $option) {
+            $params[$option->name] = $option->value;
+        }
+    }
+
+    $characterSelected = $params['character'] ?? false;
+
     $main->debug(1,sprintf("%s asked for character info", $interaction->user->username));
 
     /** @var $api MyAPI */
@@ -102,34 +135,48 @@ $discord->listenCommand('eqeinfo', function (Interaction $interaction) use ($mai
         'Name' => 15,
         'Server' => 9,
         'Level' => 9,
-        'AA' => 4,
+        'AA' => 5,
         'Powerslot Item (Percent)' => 57,
     ];
 
     $tableFormatList = array_map(function($width) { return "%-{$width}s"; }, array_values($columnWidths));
     $tableFormatPlus = '+'.implode('+',$tableFormatList).'+';
     $tableFormatPipe = '|'.implode('|',$tableFormatList).'|';
+    $tableFormatEmpty = implode(' ',$tableFormatList);
     $tableHeader = vsprintf($tableFormatPipe, array_map(function($item) { return " $item "; },array_keys($columnWidths)));
+    $tableHeaderNew = vsprintf($tableFormatEmpty, array_map(function($item) { return " $item "; },array_keys($columnWidths)));
     $tableBorder = vsprintf($tableFormatPlus, array_map(function($width) { return str_repeat('-', $width); }, array_values($columnWidths)));
 
     if (empty($characterData)) {
         $response .= "```No characters found.```";
     }
     else {
-        $response .= "```\n$tableBorder\n$tableHeader\n$tableBorder\n";
+        $characterCount = count($characterData);
+        //$response .= "```\n$tableBorder\n$tableHeader\n$tableBorder\n";
+        $response .= "\n`$tableHeaderNew`\n";
         foreach ($characterData as $characterKey => $characterInfo) {
+            if ($characterSelected && strtolower($characterSelected) !== strtolower($characterInfo['name'])) {
+                continue; // Skip if character name does not match
+            }
             $characterActive = ($characterInfo['updated'] > time() - 900) ? 'Yes' : 'No';
 
-            $response .= vsprintf("$tableFormatPipe\n", array_map(function($item) { return " $item "; },[
+            $powerslotItem = $characterInfo['powerslot_item'] ?? null;
+            $itemId        = ($characterSelected || $characterCount < 4) ? $api->thjdiLookupItemIdByName($powerslotItem) : null;
+            $powerslotLink = $itemId ? sprintf("https://www.thjdi.cc/item/%d",$itemId) : "https://www.thjdi.cc";
+
+            //$response .= vsprintf("`$tableFormatEmpty`\n", array_map(function($item) { return " $item "; },[
+            $response .= vsprintf("[`$tableFormatEmpty`](<$powerslotLink>)\n", array_map(function($item) { return " $item "; },[
+            //$response .= vsprintf("$tableFormatPipe\n", array_map(function($item) { return " $item "; },[
                 $characterActive,
                 $characterInfo['name'] ?: 'Unknown',
                 $characterInfo['server'] ?: 'Unknown',
                 $characterInfo['level'] ?: 'Unknown',
                 $characterInfo['aa_points'] ?? 0,
-                sprintf("%s (%0.2f%%)", $characterInfo['powerslot_item'] ?? 'None', $characterInfo['powerslot_percent'] ?? 0)
+                sprintf("%s (%0.2f%%)", $powerslotItem, $characterInfo['powerslot_percent'] ?? 0)
             ]));
         }
-        $response .= "$tableBorder\n```";
+        //$response .= "$tableBorder\n```";
+        $response .= "";
     }
 
     // Respond to the interaction
