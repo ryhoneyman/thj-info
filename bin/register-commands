@@ -1,10 +1,13 @@
 #!/usr/bin/php
 <?php
 include_once 'eqecho-init.php';
-use Discord\Builders\CommandBuilder;
-use Discord\Parts\Guild\Integration;
+
+//use Discord\Builders\CommandBuilder;
+//use Discord\Parts\Guild\Integration;
 use Discord\Parts\Interactions\Interaction;
 use Discord\Parts\OAuth\Application;
+use Discord\Parts\Interactions\Command\Option;
+
 include_once 'local/main.class.php';
 include_once 'autoload.php';
 
@@ -33,8 +36,8 @@ use Discord\Parts\Interactions\Command\Command;
 use Discord\Repository\Interaction\GlobalCommandRepository;
 
 $directives = [
-    'delete'   => true,
-    'register' => false,
+    'delete'   => false,
+    'register' => true,
 ];
 
 // Create a $discord BOT
@@ -45,8 +48,8 @@ $discord = new DiscordCommandClient([
 $discord->on('init', function (DiscordCommandClient $discord) use ($directives) {
 
     if ($directives['delete']) {
-        $discord->application->commands->delete("1372959257007493230");
-        $discord->application->commands->delete("1367929993698476195");
+        $discord->application->commands->delete("1373007236691132557");
+        $discord->application->commands->delete("1373007238003687444");
         //$discord->application->commands->delete("1367929870667091981");
     }
 
@@ -79,13 +82,28 @@ $discord->on('init', function (DiscordCommandClient $discord) use ($directives) 
         $commandRegister = new Command($discord,[
             'name' => 'eqereg', 
             'description' => 'EQEcho Register User', 
-            
+            'options' => [
+                [
+                    'name'        => 'force', 
+                    'description' => 'Force re-registration', 
+                    'type'        => Option::BOOLEAN,
+                    'required'    => false
+                ],
+            ]   
         ]);
         $discord->application->commands->save($commandRegister);
 
         $commandInfo = new Command($discord,[
             'name' => 'eqeinfo', 
             'description' => 'EQEcho Character Info', 
+            'options' => [
+                [
+                    'name'        => 'character', 
+                    'description' => 'Character Name', 
+                    'type'        => Option::STRING,
+                    'required'    => false
+                ],
+            ],
             'contexts' => [
                 Interaction::CONTEXT_TYPE_GUILD,
                 Interaction::CONTEXT_TYPE_BOT_DM,
