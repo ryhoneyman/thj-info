@@ -21,7 +21,8 @@ class LogModel extends DefaultModel
          //'\\S+ tells you, \'Attacking',
          'I have \\S+ percent',
          'You have gained an ability point',
-         'You have gained a level!'
+         'You have gained a level!',
+         'You found \\d+ \[.*?\]'
       ];
    }
 
@@ -87,6 +88,9 @@ class LogModel extends DefaultModel
             $info['level'] = $match[1];
 
             $alertMessage = sprintf("You have reached level ``%s`` on ``%s``",$info['level'],$characterName);
+         }
+         else if (preg_match('/you found (\d+) \[(.*?)\]/i',$logEntry,$match)) {
+            $alertMessage = sprintf("You found %d ``%s`` on ``%s``",$match[1],$match[2],$characterName);
          }
 
          if ($alertMessage && $discordId) {
