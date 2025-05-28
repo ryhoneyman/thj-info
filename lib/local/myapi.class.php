@@ -155,6 +155,20 @@ class MyAPI extends LWPLib\APIBase
         return ['api_key_id' => $result['insertId'], 'client_id' => $clientId, 'client_secret' => $clientSecret];
     }
 
+    public function getAccountByDiscordId($discordUserId)
+    {
+        $this->debug(8,"called, discordUserId: $discordUserId");
+
+        $userResults = $this->v1DataProviderBindQuery($this->defaultDatabase,'SELECT * FROM account WHERE discord_id = ?','s',[$discordUserId],['single' => true]);
+
+        if (!$userResults) {
+            $this->error("Error checking api key: ".$this->clientError());
+            return false;
+        }
+
+        return $userResults['data']['results'];
+    }
+
     public function registerAccount($discordUserId, $discordUsername)
     {
         $this->debug(8,"called, discordUserId: $discordUserId, discordUsername: $discordUsername");
@@ -303,4 +317,32 @@ class MyAPI extends LWPLib\APIBase
 
         return true;
     } 
+
+    public function thjdiLookupItemIdByName($itemName)
+    {
+        $itemId   = null;
+        $itemName = strtolower($itemName);
+
+        $request = [
+            'options' => [
+                'method'  => 'GET',
+                'timeout' => 15,
+            ],
+        ];
+
+        $requestResult = $this->makeRequest(sprintf('https://www.thjdi.cc/api/v1/items?name=%s',urlencode($itemName)),'json',$request);
+
+        if ($requestResult === false) { $this->error($this->clientError()); return false; }
+
+        $itemList = $this->clientResponseValue('items') ?? [];
+
+        foreach ($itemList as $item) {
+            if ($itemName === strtolower($itemName)) {
+                $itemId = $item['id'];
+                break;
+            }
+        }
+
+        return $itemId;
+    }
 }
